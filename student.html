@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>선생님 호출</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #2c3e50; font-size: 2.5rem; margin-bottom: 30px; text-align: center; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+        .teacher-btn { background-color: #ffffff; border: 2px solid #3498db; border-radius: 15px; padding: 25px 20px; font-size: 1.3rem; font-weight: bold; color: #3498db; cursor: pointer; transition: all 0.2s ease-in-out; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .teacher-btn:hover { background-color: #3498db; color: #ffffff; transform: translateY(-3px); }
+        #notification { margin-top: 30px; font-size: 1.5rem; font-weight: bold; color: #e74c3c; height: 30px; }
+    </style>
+</head>
+<body>
+
+    <h1>선생님들 호출</h1>
+    <div class="grid-container">
+        <button class="teacher-btn" onclick="callTeacher('유진기')">유진기 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('김선영')">김선영 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('노기정')">노기정 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('심재훈')">심재훈 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('오재관')">오재관 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('오한결')">오한결 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('김미선')">김미선 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('임재영')">임재영 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('김민정')">김민정 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('김여경')">김여경 선생님</button>
+        <button class="teacher-btn" onclick="callTeacher('이승민')">이승민 선생님</button>
+    </div>
+    <div id="notification"></div>
+
+    <script>
+        // 선생님께서 알려주신 파이어베이스 설정값입니다.
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPpMKQYkrHmqrNf-ArbOgtIFhMUnR3NeM",
+            authDomain: "teachercall-dfecd.firebaseapp.com",
+            databaseURL: "https://teachercall-dfecd-default-rtdb.firebaseio.com",
+            projectId: "teachercall-dfecd",
+            storageBucket: "teachercall-dfecd.firebasestorage.app",
+            messagingSenderId: "988213097074",
+            appId: "1:988213097074:web:dc32c09a760d5e68f608eb"
+        };
+
+        // 파이어베이스 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function callTeacher(name) {
+            // 파이어베이스에 호출 기록 전송
+            db.ref('calls/latest').set({
+                teacherName: name,
+                timestamp: Date.now()
+            });
+
+            // 화면에 알림 표시
+            const noti = document.getElementById('notification');
+            noti.innerText = `${name} 선생님을 호출했습니다. 잠시만 기다려주세요.`;
+            setTimeout(() => { noti.innerText = ''; }, 3000);
+        }
+    </script>
+</body>
+</html>
