@@ -8,21 +8,46 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        body { 
+            font-family: 'Malgun Gothic', sans-serif; 
+            background-color: #2c3e50; 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
         h1 { font-size: 3rem; margin-bottom: 20px; }
-        #startBtn { background-color: #e74c3c; color: white; border: none; padding: 20px 40px; font-size: 1.5rem; border-radius: 10px; cursor: pointer; margin-bottom: 30px; font-weight: bold; }
-        #startBtn:hover { background-color: #c0392b; }
-        #history { font-size: 2rem; color: #f1c40f; text-align: center; }
+        .status-box {
+            background-color: #27ae60;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+        #history { font-size: 2.5rem; color: #f1c40f; text-align: center; font-weight: bold; }
+        
+        /* 대기 중임을 알리는 부드러운 깜빡임 효과 */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>🎙️ 교무실 호출 수신 대기</h1>
-    <button id="startBtn">수신 대기 시작 (필수 클릭)</button>
-    <div id="history">현재 호출된 선생님이 없습니다.</div>
+    <h1>🎙️ 교무실 스마트 호출기</h1>
+    <div class="status-box">🟢 자동 수신 대기 중 (소리 허용됨)</div>
+    <div id="history">학생의 호출을 기다리고 있습니다.</div>
 
     <script>
-        // 선생님께서 알려주신 파이어베이스 설정값입니다.
+        // ★ 선생님의 진짜 파이어베이스 설정값으로 교체해 주세요! ★
         const firebaseConfig = {
             apiKey: "AIzaSyCPpMKQYkrHmqrNf-ArbOgtIFhMUnR3NeM",
             authDomain: "teachercall-dfecd.firebaseapp.com",
@@ -33,32 +58,17 @@
             appId: "1:988213097074:web:dc32c09a760d5e68f608eb"
         };
 
-        // 파이어베이스 초기화
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        let isReady = false;
         let isFirstLoad = true;
         let synthesis = window.speechSynthesis;
 
-        // 소리 자동재생 방지 해제 버튼
-        document.getElementById('startBtn').addEventListener('click', function() {
-            isReady = true;
-            this.style.display = 'none';
-            
-            const initMsg = new SpeechSynthesisUtterance("네트워크 호출 시스템이 활성화되었습니다.");
-            initMsg.lang = 'ko-KR';
-            synthesis.speak(initMsg);
-            
-            document.getElementById('history').innerText = "수신 대기 중... 학생의 호출을 기다립니다.";
-        });
-
-        // 파이어베이스 실시간 감지
+        // 파이어베이스 실시간 감지 (버튼 클릭 확인 과정 삭제됨)
         db.ref('calls/latest').on('value', (snapshot) => {
             const data = snapshot.val();
             
             if (data) {
-                // 새로고침 할 때 과거 기록으로 소리가 나는 것을 방지
+                // 사이트를 처음 열었을 때 과거 기록으로 소리가 나는 현상 방지
                 if (isFirstLoad) {
                     isFirstLoad = false;
                     return; 
@@ -66,14 +76,19 @@
 
                 const teacherName = data.teacherName;
                 const timeString = new Date(data.timestamp).toLocaleTimeString();
-                document.getElementById('history').innerText = `[${timeString}] ${teacherName} 선생님 호출됨!`;
+                
+                // 화면 업데이트
+                document.getElementById('history').innerText = `[${timeString}]\n${teacherName} 선생님 호출됨!`;
 
-                // 음성 송출
-                if (isReady) {
-                    const speechMsg = new SpeechSynthesisUtterance(`${teacherName} 선생님, 학생 왔습니다.`);
-                    speechMsg.lang = 'ko-KR';
-                    synthesis.speak(speechMsg);
-                }
+                // 즉시 음성 송출
+                const speechMsg = new SpeechSynthesisUtterance(`${teacherName} 선생님, 학생 왔습니다.`);
+                speechMsg.lang = 'ko-KR';
+                
+                // (선택) 목소리 속도 및 음정 조절
+                speechMsg.rate = 0.95; // 속도 (기본 1)
+                speechMsg.pitch = 1.1; // 음정 (기본 1)
+                
+                synthesis.speak(speechMsg);
             }
         });
     </script>
